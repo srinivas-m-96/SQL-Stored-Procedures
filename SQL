@@ -1,0 +1,87 @@
+- need city name in which single order was not returned--
+
+select o.city,count(r.order_id) as Return_count from
+namaste_orders o LEFT join namaste_returns r 
+on o.order_id=r.order_id
+group by o.city         --Here count will not count the NULL Values
+having count(r.order_id)=0
+
+---
+
+-- first find the users who speaks english and german 
+-- then find the company who have more than 1 user who speaks above 2 languages
+
+
+with CTE as(
+select company_id,user_id,count(language) as language_count from company_users
+where language in ('English','German')
+group by company_id, user_id
+having count(language)>=2) 
+
+select company_id , count(user_id) as User_count from cte 
+group by company_id
+having count(user_id)>=2;
+
+----
+Create Procedure to get Maximum Ordered Customer
+
+CREATE PROCEDURE max_order_customer as
+BEGIN
+select top 1 customer_id from Total_Orders
+group by customer_id
+order by sum(list_price) desc 
+end;
+
+execute max_order_customer;
+
+
+---------
+
+Create Procedure to get Count of orders on specified Date
+drop procedure if exists date_count 
+create procedure date_count(@date date)
+as
+begin
+select order_date ,count(order_id) as order_count,sum(list_price)_tot_price from Total_Orders
+--where order_date>@date
+group by order_date
+end;
+
+exec date_count '2017-01-01';
+---
+Create procedure to find out desired customer count
+
+drop procedure  if exists COUNT_ORDERS;
+
+CREATE PROCEDURE COUNT_ORDERS (@customer_id as int)
+as begin
+select customer_id ,count(order_id) as order_count,sum(list_price)_tot_price from Total_Orders
+where customer_id=@customer_id
+group by customer_id
+order by sum(list_price) desc
+end
+execute COUNT_ORDERS 325;
+-----
+Create procedure to change the Sales Data type to Decimal
+
+create Procedure Change_data_Type()
+as
+Begin
+update Sales_Data
+set sales_amount =cast(sales_amount to decimal(10,2)
+where sales_amount is NOT NULL
+end
+
+--------
+
+Create procedure to replace new custID as NULLS
+Create Procedure Replace_Nulls()
+begin
+update Sales_Data 
+set customer_id=NULL
+where customer_id NOT in (select customer_ID from customers)
+end;
+
+
+
+----------
