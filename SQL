@@ -82,6 +82,35 @@ set customer_id=NULL
 where customer_id NOT in (select customer_ID from customers)
 end;
 
-
-
 ----------
+
+// Create procedure to get final price dynamically with change in discout rate
+CREATE PROCEDURE AdjustSalesWithDiscount
+    @DiscountRate DECIMAL(5,2)
+AS
+BEGIN
+    UPDATE Sales
+    SET SalesAmount = SalesAmount * (1 - @DiscountRate / 100)
+    WHERE OrderDate >= '2023-01-01' -- Adjust sales from a specific date
+END;
+
+----
+// How to find sales info with dynamic date range
+
+CREATE PROCEDURE GenerateSalesReport
+    @StartDate DATE,
+    @EndDate DATE
+AS
+BEGIN
+    SELECT 
+        ProductID,
+        SUM(Quantity) AS TotalQuantitySold,
+        SUM(SalesAmount) AS TotalSalesAmount
+    FROM 
+        Sales
+    WHERE 
+        OrderDate BETWEEN @StartDate AND @EndDate
+    GROUP BY 
+        ProductID;
+END;
+
